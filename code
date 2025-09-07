@@ -1,0 +1,87 @@
+/*
+  Project: Temperature & Humidity Monitor with DHT11 and OLED Display
+  Description: 
+    This Arduino project uses a DHT11 sensor to measure humidity and temperature 
+    and displays the values on a 128x64 OLED (SSD1306). 
+    The readings are also printed on the Serial Monitor. 
+    At the bottom of the OLED display, the designer’s name is shown.
+
+  Author: MD MIZANUR RAHMAN
+*/
+#include "DHT.h"
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define DHTPIN 11
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Default I2C address is 0x3C
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;);
+  }
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+  display.println("DHT11 Sensor Init...");
+  display.display();
+  delay(2000);
+}
+
+void loop() {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  float f = dht.readTemperature(true);
+
+  // Print on Serial Monitor
+  Serial.print("HUMIDITY = ");
+  Serial.print(h);
+  Serial.print("%  ");
+  Serial.print("TEMPERATURE = ");
+  Serial.print(t);
+  Serial.print(" C  ");
+  Serial.print(f);
+  Serial.println(" F");
+
+  // Print on OLED
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print("Hum: ");
+  display.setTextSize(2);
+  display.print(h);
+  display.setTextSize(2);
+  display.println("%");
+  
+  display.setTextSize(1);
+  display.setCursor(0,20);
+  display.print("Temp: ");
+  display.setTextSize(2);
+  display.print(t);
+  display.setTextSize(2);
+  display.print((char)247); // degree symbol
+  display.println("C");
+
+  // Show your name at bottom
+  display.setTextSize(1);
+  display.setCursor(0, 45);
+  display.println("Designed by:");
+  display.setCursor(0, 55);
+  display.println("MD MIZANUR RAHMAN");
+  display.display();
+
+  delay(1000);
+}
